@@ -21,11 +21,13 @@ import {
 } from "@/src/features/today/mocks";
 import { TodayHeader } from "@/src/features/today/TodayHeader";
 import { useCardData } from "@/src/features/today/useCardData";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { useTheme } from "@/src/theme";
 import type { HealthEntry, Task } from "@/src/types/models";
 
 export default function TodayScreen() {
   const { theme } = useTheme();
+  const { profile } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const [refreshing, setRefreshing] = useState(false);
@@ -119,7 +121,7 @@ export default function TodayScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg.canvas }]}>
       <TodayHeader
-        name="Priya"
+        name={profile?.display_name ?? "there"}
         onPressAvatar={() => router.push("/more")}
         onPressBell={() => {}}
       />

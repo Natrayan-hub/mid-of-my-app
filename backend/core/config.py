@@ -17,6 +17,7 @@ class Settings:
     ENV: str = os.environ.get("ENV", "dev")
     MONGO_URL: str = os.environ["MONGO_URL"]
     DB_NAME: str = os.environ["DB_NAME"]
+    JWT_SECRET: str = os.environ["JWT_SECRET"]
     API_VERSION: str = "v1"
     APP_NAME: str = "LifeOS API"
 

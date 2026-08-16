@@ -4,12 +4,14 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { StubScreen } from "@/src/components/StubScreen";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { ThemeMode, useTheme } from "@/src/theme";
 
 const MODES: ThemeMode[] = ["system", "light", "dark"];
 
 export default function MoreScreen() {
   const { theme, mode, setMode } = useTheme();
+  const { user, signOut } = useAuth();
 
   return (
     <StubScreen
@@ -64,6 +66,21 @@ export default function MoreScreen() {
           );
         })}
       </View>
+      <View style={{ marginTop: theme.space.lg, alignItems: "center", gap: theme.space.xs }}>
+        {user ? (
+          <Text style={[theme.type.caption, { color: theme.colors.text.tertiary }]}>
+            Signed in as {user.email}
+          </Text>
+        ) : null}
+        <TouchableOpacity
+          onPress={signOut}
+          accessibilityRole="button"
+          accessibilityLabel="Sign out"
+          style={styles.signOut}
+        >
+          <Text style={[theme.type.label, { color: theme.colors.error.text }]}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
     </StubScreen>
   );
 }
@@ -79,5 +96,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  signOut: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
 });

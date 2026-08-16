@@ -1,13 +1,13 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { LogBox } from "react-native";
+import { LogBox, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
 import { ToastProvider } from "@/src/components/Toast";
-import { AuthProvider } from "@/src/providers/AuthProvider";
+import { AuthProvider, useAuth } from "@/src/providers/AuthProvider";
 import { SyncProvider } from "@/src/providers/SyncProvider";
 import { ThemeProvider, useTheme } from "@/src/theme";
 import { useFonts } from "expo-font";
@@ -24,16 +24,36 @@ SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const { theme, resolvedScheme } = useTheme();
+  const { status, onboardingComplete } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  // New-vs-returning branching:
+  // - no session → onboarding (welcome)
+  // - session + onboarding done → main app (mid-flow signup stays in (auth))
+  useEffect(() => {
+    if (status === "loading") return;
+    const inAuthGroup = segments[0] === "(auth)";
+    if (status === "unauthenticated" && !inAuthGroup) {
+      router.replace("/(auth)/welcome");
+    } else if (status === "authenticated" && onboardingComplete && inAuthGroup) {
+      router.replace("/");
+    }
+  }, [status, onboardingComplete, segments, router]);
 
   return (
     <>
       <StatusBar style={resolvedScheme === "dark" ? "light" : "dark"} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.bg.canvas },
-        }}
-      />
+      {status === "loading" ? (
+        <View style={{ flex: 1, backgroundColor: theme.colors.bg.canvas }} />
+      ) : (
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: theme.colors.bg.canvas },
+          }}
+        />
+      )}
     </>
   );
 }

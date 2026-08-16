@@ -15,7 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from core import db as database
 from core.config import settings
-from core.seed import seed_demo_data
+from core.security import ensure_session_indexes
 from routes import api_router
 
 logging.basicConfig(
@@ -55,7 +55,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.on_event("startup")
 async def on_startup():
     await database.ensure_indexes()
-    await seed_demo_data()
+    await ensure_session_indexes()
     logger.info("LifeOS API started (env=%s)", settings.ENV)
 
 

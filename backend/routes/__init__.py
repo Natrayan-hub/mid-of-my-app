@@ -1,13 +1,16 @@
-"""API router aggregation. Feature routers (auth, tasks, health, documents,
-sync, ai, integrations, notifications) slot in here as they are built —
-one module per group from the API design Part B."""
 from fastapi import APIRouter
 
+from routes.ai import router as ai_router
+from routes.auth import router as auth_router
 from routes.health import router as health_router
 from routes.meta import router as meta_router
 from routes.tasks import router as tasks_router
+from routes.users import router as users_router
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(meta_router)
+api_router.include_router(auth_router)
+api_router.include_router(users_router)
 api_router.include_router(tasks_router)
 api_router.include_router(health_router)
+api_router.include_router(ai_router)

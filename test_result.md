@@ -101,3 +101,104 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+user_problem_statement: >
+  LifeOS — personal life command center (Expo + FastAPI + MongoDB). Built so far:
+  Phase 1 skeleton (tabs: Today/Tasks/Health/Docs/More + quick-add FAB),
+  Phase 2 real Today dashboard (S6), Phase 3 onboarding/auth flow (S1-S5).
+  Current test scope: onboarding + auth end-to-end and Today regression.
+
+backend:
+  - task: "JWT auth: register/login/refresh(rotating)/logout"
+    implemented: true
+    working: true
+    file: "backend/routes/auth.py, backend/core/security.py"
+    stuck_count: 0
+    priority: high
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: main
+        comment: "Verified via curl: register 201, login, /me, tasks scoped, refresh rotation, old-token reuse -> TOKEN_REUSE 401, wrong password -> generic 401."
+  - task: "Users routes: GET /me, PATCH /me/profile, GET/PUT /me/preferences"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/users.py"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: main
+        comment: "profile patch + preferences PUT (data_controls) used by onboarding; needs API test."
+  - task: "AI memory routes: GET/POST /ai/memory"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/ai.py"
+    stuck_count: 0
+    priority: medium
+    needs_retesting: true
+  - task: "Tasks + health entries now JWT-protected"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/tasks.py, backend/routes/health.py, backend/routes/deps.py"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: main
+        comment: "get_current_user_id now decodes Bearer JWT; unauth -> 401 envelope. Starter tasks seeded at register."
+
+frontend:
+  - task: "Onboarding flow S1-S5 (welcome/account/privacy/permissions/personalize)"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(auth)/*.tsx, frontend/src/features/onboarding/OnboardingScaffold.tsx"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+  - task: "Auth state branching (new user -> onboarding, returning -> Today)"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/_layout.tsx, frontend/src/providers/AuthProvider.tsx"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+  - task: "API client 401 auto-refresh (single-flight) + secure token storage"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/api/client.ts, frontend/src/api/auth.ts"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+  - task: "Today dashboard regression (cards, task complete, water add) with real auth"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/index.tsx"
+    stuck_count: 0
+    priority: high
+    needs_retesting: true
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+
+test_plan:
+  current_focus:
+    - "Onboarding flow S1-S5"
+    - "Auth state branching"
+    - "Backend users/preferences/ai-memory routes"
+    - "Today regression with auth"
+  stuck_tasks: []
+  test_all: false
+
+agent_communication:
+  - agent: "main"
+    message: >
+      Test credentials in /app/memory/test_credentials.md (testuser@lifeos.app / LifeOS!2026demo).
+      For UI flow, register a NEW unique email (e.g. uitest+<ts>@lifeos.app) to exercise the
+      full signup path: welcome -> account -> privacy -> permissions -> personalize -> Today.
+      Sign-in path should skip onboarding straight to Today. Sign out via More tab.
+      Permissions step records intents only (OS prompts deferred to first use by design).
+      Health/Social cards on Today are MOCK by design (labeled Sample).
