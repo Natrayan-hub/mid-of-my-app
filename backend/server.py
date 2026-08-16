@@ -9,11 +9,13 @@ Run by supervisor as `uvicorn server:app --host 0.0.0.0 --port 8001`.
 """
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
 from core import db as database
 from core.config import settings
+from core.seed import seed_demo_data
 from routes import api_router
 
 logging.basicConfig(
@@ -34,9 +36,26 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Uniform error envelope (API design B.0): {error: {code, message, retryable}}."""
+    detail = exc.detail if isinstance(exc.detail, str) else "INTERNAL"
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": detail,
+                "message": detail.replace("_", " ").capitalize(),
+                "retryable": exc.status_code >= 500 or exc.status_code == 429,
+            }
+        },
+    )
+
+
 @app.on_event("startup")
 async def on_startup():
     await database.ensure_indexes()
+    await seed_demo_data()
     logger.info("LifeOS API started (env=%s)", settings.ENV)
 
 

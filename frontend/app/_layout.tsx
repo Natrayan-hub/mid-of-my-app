@@ -6,6 +6,7 @@ import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
+import { ToastProvider } from "@/src/components/Toast";
 import { AuthProvider } from "@/src/providers/AuthProvider";
 import { SyncProvider } from "@/src/providers/SyncProvider";
 import { ThemeProvider, useTheme } from "@/src/theme";
@@ -64,7 +65,9 @@ export default function RootLayout() {
       <ThemeProvider>
         <AuthProvider>
           <SyncProvider>
-            <RootNavigator />
+            <ToastProvider>
+              <RootNavigator />
+            </ToastProvider>
           </SyncProvider>
         </AuthProvider>
       </ThemeProvider>

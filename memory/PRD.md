@@ -70,6 +70,37 @@ When auth is built: use integration_expert playbook first; update
 - Design doc says lucide-style icons — using Feather (Lucide's predecessor,
   already bundled) to avoid extra deps.
 
+## Completed — Phase 2: Today Dashboard (S6, verified)
+Backend:
+- `routes/deps.py` — `get_current_user_id()` returns DEMO_USER_ID ("demo-user")
+  until auth lands (swap seam for JWT later).
+- `routes/tasks.py` — GET /api/tasks (bucket/completed filters), POST /api/tasks,
+  POST /api/tasks/{id}/complete, POST /api/tasks/{id}/reopen.
+- `routes/health.py` — GET/POST /api/health/entries (manual water/mood/weight
+  logs only; integration health data stays on-device per S34).
+- `core/seed.py` — idempotent demo user + profile ("Priya") + 3 starter tasks
+  (marker = demo user doc exists). DEV ONLY — remove when auth ships.
+- `server.py` — HTTPException → uniform error envelope {error:{code,message,retryable}}.
+
+Frontend:
+- Shared: `src/components/Card.tsx` (Card raised/flat/ai + CardHeader + CardError),
+  `Skeleton.tsx` (pulse), `Toast.tsx` (ToastProvider + useToast, undo support;
+  wired into root layout).
+- `src/features/today/` — `api.ts` (fetchTodayTasks/complete/reopen,
+  fetchWaterToday/addWater), `useCardData.ts` (loading/error/offline-with-cache
+  hook, caches to storage `lifeos.cache.*`), `mocks.ts` (MOCK health snapshot as
+  HealthCacheSample, MOCK social as SocialStat shape, placeholder Suggestion
+  generator with reason/sources), `TodayHeader.tsx`, `cards/` (SuggestionCard,
+  HealthCard, TasksCard, WaterCard, SocialCard).
+- `app/(tabs)/index.tsx` — real Today screen: header (greeting/date/avatar/bell),
+  offline banner, pull-to-refresh, flexible card feed.
+
+Card data sources: Tasks = REAL API · Water = REAL API · Health = MOCK (local
+HealthCache shape) · Social = MOCK (SocialStat shape, "Sample" chip) ·
+AI suggestion = placeholder logic through real Suggestion shape.
+Interactions verified: task complete (optimistic + undo toast), +250ml water
+(optimistic), suggestion accept/dismiss, card deep-links to tab stubs, both themes.
+
 ## Next
-- Phase 2: Today dashboard (S6) — real screen (user will prompt).
-- Later: onboarding (S1–S5), health, tasks, documents, more-hub screens.
+- Phase 3: Onboarding (S1–S5) — user will prompt. Auth via integration_expert!
+- Later: health (S14–S17), tasks (S10–S13), documents (S18–S21), more-hub.
